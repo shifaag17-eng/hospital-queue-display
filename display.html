@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital Queue Display</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1f5c54;
+      color: white;
+      text-align: center;
+    }
+    .room {
+      margin: 20px;
+      padding: 20px;
+      border: 2px solid white;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 150px;
+    }
+    .token {
+      font-size: 50px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .room-number {
+      font-size: 30px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Current Queue Status</h1>
+  <div id="rooms"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+var firebaseConfig = {
+  databaseURL: "https://hinnavaru-queue-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+
+const roomsDiv = document.getElementById("rooms");
+let lastData = {};
+
+db.ref("rooms").on("value", function(snapshot) {
+  const data = snapshot.val();
+  roomsDiv.innerHTML = "";
+
+  if (!data) {
+    roomsDiv.innerHTML = "<p>No current tokens</p>";
+    return;
+  }
+
+  for (let roomKey in data) {
+    const call = data[roomKey];
+    const token = call.Token || "-";
+    const room = call.Room || roomKey;
+    let highlight = "";
+
+    if (!lastData[roomKey] || lastData[roomKey] !== token) {
+      highlight = "highlight"; // you can add CSS for highlight
+      lastData[roomKey] = token;
+    }
+
+    roomsDiv.innerHTML += `
+      <div class="room ${highlight}">
+        <div class="room-number">Room ${room}</div>
+        <div class="token">Token ${token}</div>
+      </div>
+    `;
+  }
+});
+</script>
+
+</body>
+</html>
